@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Conversion Calculator",
+  "version": "1.3.0",
+  "description": "Two-way currency conversion calculator with automatic hourly, daily, weekly, bi-monthly, and monthly totals.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Conversion Calculator"
+  }
+}
