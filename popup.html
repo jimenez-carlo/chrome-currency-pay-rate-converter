@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversion Calculator</title>
+    <style>
+      :root {
+        --bg-app: #09090b;
+        --bg-card: #121216;
+        --bg-header: #17171c;
+        --bg-ro: #18181d;
+        --bg-edit: #222229;
+        --bg-edit-hover: #292932;
+        --border: #27272f;
+        --border-strong: #383844;
+        --ring: #e4e4e7;
+        --ring-glow: rgba(228, 228, 231, 0.14);
+        --text-main: #fafafa;
+        --text-muted: #a1a1aa;
+        --text-dim: #71717a;
+        --accent-sky: #38bdf8;
+        --accent-emerald: #34d399;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 780px;
+        height: 356px;
+        overflow: hidden;
+        background-color: var(--bg-app);
+        color: var(--text-main);
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+        font-size: 11.5px;
+        line-height: 1.3;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      ::-webkit-scrollbar {
+        display: none;
+      }
+
+      .widget {
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow: hidden;
+      }
+
+      .card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+
+      /* Top Bar */
+      .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 11px;
+        flex-shrink: 0;
+      }
+
+      .conversion-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .conversion-pill {
+        display: inline-flex;
+        align-items: center;
+        height: 28px;
+        padding: 0 9px;
+        border-radius: 999px;
+        background-color: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.28);
+        color: var(--accent-sky);
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 28px;
+        padding: 0 9px;
+        border-radius: 7px;
+        border: 1px solid var(--border-strong);
+        background-color: #19191f;
+        color: var(--text-main);
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .btn:hover {
+        background-color: #24242c;
+        border-color: #4b4b5a;
+      }
+
+      .btn svg {
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+      }
+
+      /* Two Column Grid */
+      .columns {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .col-card {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .col-header {
+        display: flex;
+        align-items: center;
+        padding: 7px 11px;
+        background-color: var(--bg-header);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .col-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .rate-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--accent-emerald);
+        font-size: 11.5px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .rate-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: var(--accent-emerald);
+      }
+
+      .col-body {
+        padding: 9px 10px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+      }
+
+      /* Calculation Grid */
+      .calc-grid {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 70px 10px 58px 10px 80px 80px;
+        align-items: center;
+        gap: 6px 4px;
+      }
+
+      .divider {
+        grid-column: 1 / -1;
+        height: 1px;
+        background-color: var(--border);
+        margin: 2px 0;
+      }
+
+      input {
+        width: 100%;
+        height: 28px;
+        padding: 0 6px;
+        border-radius: 6px;
+        font-family: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        outline: none;
+        transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      input.editable {
+        background-color: var(--bg-edit);
+        color: var(--text-main);
+        border: 1px solid var(--border-strong);
+      }
+
+      input.editable:hover {
+        background-color: var(--bg-edit-hover);
+        border-color: #525262;
+      }
+
+      input.editable:focus {
+        background-color: #272730;
+        border-color: var(--ring);
+        box-shadow: 0 0 0 2px var(--ring-glow);
+      }
+
+      input.readonly {
+        background-color: var(--bg-ro);
+        color: #d4d4d8;
+        border: 1px solid var(--border);
+        cursor: default;
+      }
+
+      input.readonly.total {
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      input.curr-input {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+        font-weight: 600;
+      }
+
+      .w-curr {
+        width: 64px;
+      }
+
+      .w-top-num {
+        width: 62px;
+      }
+
+      .align-left {
+        text-align: left;
+      }
+
+      .align-right {
+        text-align: right;
+      }
+
+      .op {
+        text-align: center;
+        color: var(--text-dim);
+        font-family: "JetBrains Mono", "Consolas", monospace;
+        user-select: none;
+      }
+
+      .period {
+        color: var(--text-muted);
+        font-size: 10.5px;
+        font-weight: 500;
+        white-space: nowrap;
+        padding-left: 2px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="widget">
+      <div class="card top-bar">
+        <div class="conversion-group">
+          <input id="curr1" class="editable curr-input align-left w-curr" type="text" value="USD" />
+          <input id="rate1Fixed" class="readonly align-right w-top-num" type="text" value="1" readonly />
+          <span class="conversion-pill">Conversion</span>
+          <input id="curr2" class="editable curr-input align-left w-curr" type="text" value="PHP" />
+          <input id="rate2Top" class="editable align-right w-top-num" type="text" value="60" />
+        </div>
+
+        <div class="actions">
+          <button id="swapBtn" class="btn" type="button" title="Swap currencies and hourly rates">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="m16 3 4 4-4 4"></path>
+              <path d="M20 7H4"></path>
+              <path d="m8 21-4-4 4-4"></path>
+              <path d="M4 17h16"></path>
+            </svg>
+            Swap
+          </button>
+          <button id="resetBtn" class="btn" type="button" title="Reset all fields to default values">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div class="columns">
+        <!-- Left Currency -->
+        <div class="card col-card">
+          <div class="col-header">
+            <div class="col-title">
+              <input id="hdrCurr1" class="readonly curr-input align-left w-curr" type="text" value="USD" readonly />
+              <span class="rate-tag"><span class="rate-dot"></span>Rate</span>
+            </div>
+          </div>
+          <div class="col-body">
+            <div class="calc-grid">
+              <input id="fixed1_1" class="readonly align-right" type="text" value="1" readonly />
+              <span class="op">*</span>
+              <input id="hourRate1" class="editable align-right" type="text" value="9" />
+              <span class="op">=</span>
+              <input id="out1Hour" class="readonly total align-right" type="text" readonly />
+              <span class="period">per hour</span>
+
+              <input id="perHour1Ro" class="readonly align-right" type="text" readonly />
+              <span class="op">*</span>
+              <input id="hrs1" class="editable align-right" type="text" value="8" />
+              <span class="op">=</span>
+              <input id="out1Day" class="readonly total align-right" type="text" readonly />
+              <span class="period">per day</span>
+
+              <input id="perDay1Ro" class="readonly align-right" type="text" readonly />
+              <span class="op">*</span>
+              <input id="days1" class="editable align-right" type="text" value="5" />
+              <span class="op">=</span>
+              <input id="out1Week" class="readonly total align-right" type="text" readonly />
+              <span class="period">per week</span>
+
+              <div class="divider"></div>
+
+              <input id="bimonth1Left" class="readonly align-right" type="text" readonly />
+              <span class="op">*</span>
+              <input id="two1Bimonth" class="readonly align-right" type="text" value="2" readonly />
+              <span class="op">=</span>
+              <input id="out1Bimonth" class="readonly total align-right" type="text" readonly />
+              <span class="period">per bi month</span>
+
+              <input id="month1Left" class="readonly align-right" type="text" readonly />
+              <span class="op">*</span>
+              <input id="two1Month" class="readonly align-right" type="text" value="2" readonly />
+              <span class="op">=</span>
+              <input id="out1Month" class="readonly total align-right" type="text" readonly />
+              <span class="period">per month</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Currency -->
+        <div class="card col-card">
+          <div class="col-header">
+            <div class="col-title">
+              <input id="hdrCurr2" class="readonly curr-input align-left w-curr" type="text" value="PHP" readonly />
+              <span class="rate-tag"><span class="rate-dot"></span>Rate</span>
+            </div>
+          </div>
+          <div class="col-body">
+            <div class="calc-grid">
+              <input id="fixed2_1" class="readonly align-right" type="text" value="1" readonly />
+              <span class="op">*</span>
+              <input id="hourRate2" class="editable align-right" type="text" value="540" />
+              <span class="op">=</span>
+              <input id="out2Hour" class="readonly total align-right" type="text" readonly />
+              <span class="period">per hour</span>
+
+              <input id="perHour2Ro" class="readonly align-right" type="text" readonly />
+              <span class="op">*</span>
+              <input id="hrs2" class="editable align-right" type="text" value="8" />
+              <span class="op">=</span>
+              <input id="out2Day" class="readonly total align-right" type="text" readonly />
+              <span class="period">per day</span>
+
+              <input id="perDay2Ro" class="readonly align-right" type="text" readonly />
+              <span class="op">*</span>
+              <input id="days2" class="editable align-right" type="text" value="5" />
+              <span class="op">=</span>
+              <input id="out2Week" class="readonly total align-right" type="text" readonly />
+              <span class="period">per week</span>
+
+              <div class="divider"></div>
+
+              <input id="bimonth2Left" class="readonly align-right" type="text" readonly />
+              <span class="op">*</span>
+              <input id="two2Bimonth" class="readonly align-right" type="text" value="2" readonly />
+              <span class="op">=</span>
+              <input id="out2Bimonth" class="readonly total align-right" type="text" readonly />
+              <span class="period">per bi month</span>
+
+              <input id="month2Left" class="readonly align-right" type="text" readonly />
+              <span class="op">*</span>
+              <input id="two2Month" class="readonly align-right" type="text" value="2" readonly />
+              <span class="op">=</span>
+              <input id="out2Month" class="readonly total align-right" type="text" readonly />
+              <span class="period">per month</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+
+</html>
